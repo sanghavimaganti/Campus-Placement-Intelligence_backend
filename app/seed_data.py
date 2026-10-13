@@ -1,5 +1,5 @@
 from sqlalchemy.orm import Session
-from app.models import Student, CompanyDrive
+from app.models import Student, CompanyDrive, User, DriveApplication
 
 INITIAL_COMPANIES = [
     {
@@ -267,3 +267,36 @@ def seed_database_if_empty(db: Session):
 
         db.bulk_save_objects(students_to_add)
         db.commit()
+
+    # Seed Admin User if empty
+    if db.query(User).count() == 0:
+        admin_user = User(
+            email="admin@campus.edu",
+            name="Prof. Rajesh Varma",
+            role="admin",
+            password_hash="admin123",
+            student_id=None
+        )
+        db.add(admin_user)
+        db.commit()
+
+    # Seed sample drive applications if empty
+    if db.query(DriveApplication).count() == 0:
+        first_student = db.query(Student).filter(Student.roll_number == "21CS001").first()
+        google = db.query(CompanyDrive).filter(CompanyDrive.company_name == "Google").first()
+        msft = db.query(CompanyDrive).filter(CompanyDrive.company_name == "Microsoft").first()
+
+        if first_student and google:
+            db.add(DriveApplication(
+                student_id=first_student.id,
+                company_drive_id=google.id,
+                status="Selected"
+            ))
+        if first_student and msft:
+            db.add(DriveApplication(
+                student_id=first_student.id,
+                company_drive_id=msft.id,
+                status="Interview Scheduled"
+            ))
+        db.commit()
+

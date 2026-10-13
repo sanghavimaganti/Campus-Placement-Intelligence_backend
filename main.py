@@ -8,7 +8,7 @@ from fastapi.responses import JSONResponse
 from app.config import settings
 from app.database import engine, Base, SessionLocal
 from app.seed_data import seed_database_if_empty
-from app.routers import students, companies, eligibility, analytics
+from app.routers import students, companies, eligibility, analytics, auth, applications
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -39,6 +39,8 @@ app.add_middleware(
 )
 
 # Include Routers
+app.include_router(auth.router, prefix=settings.API_V1_STR)
+app.include_router(applications.router, prefix=settings.API_V1_STR)
 app.include_router(students.router, prefix=settings.API_V1_STR)
 app.include_router(companies.router, prefix=settings.API_V1_STR)
 app.include_router(eligibility.router, prefix=settings.API_V1_STR)

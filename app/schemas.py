@@ -141,3 +141,53 @@ class SkillGapResponse(BaseModel):
     missing_skills: List[str]
     recommendations: List[str]
     readiness_score: float
+
+# --- Authentication Schemas ---
+class LoginRequest(BaseModel):
+    login_id: str # Can be email or roll number
+    password: str
+    role: Optional[str] = "student" # 'admin' or 'student'
+
+class UserResponse(BaseModel):
+    id: int
+    email: str
+    name: str
+    role: str
+    student_id: Optional[int] = None
+    roll_number: Optional[str] = None
+    department: Optional[str] = None
+    token: str
+
+# --- Drive Application Schemas ---
+class ApplicationCreate(BaseModel):
+    student_id: int
+    company_drive_id: int
+
+class ApplicationResponse(BaseModel):
+    id: int
+    student_id: int
+    company_drive_id: int
+    company_name: str
+    role: str
+    package_lpa: float
+    status: str
+    applied_at: str
+
+# --- What-If AI Simulator Schemas ---
+class WhatIfRequest(BaseModel):
+    student_id: int
+    simulated_cgpa: Optional[float] = None
+    simulated_active_backlogs: Optional[int] = None
+    additional_skills: Optional[List[str]] = []
+    additional_projects: Optional[int] = 0
+    additional_internships: Optional[int] = 0
+
+class WhatIfResponse(BaseModel):
+    baseline_score: float
+    simulated_score: float
+    score_delta: float
+    baseline_eligible_count: int
+    simulated_eligible_count: int
+    unlocked_companies: List[str]
+    insights: List[str]
+

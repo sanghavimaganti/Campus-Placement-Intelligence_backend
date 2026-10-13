@@ -44,3 +44,23 @@ class CompanyDrive(Base):
     registration_deadline = Column(String(50), default="")
     status = Column(String(50), default="Upcoming") # Upcoming, Ongoing, Completed
     created_at = Column(DateTime, default=datetime.datetime.utcnow)
+
+class User(Base):
+    __tablename__ = "users"
+
+    id = Column(Integer, primary_key=True, index=True, autoincrement=True)
+    email = Column(String(100), unique=True, index=True, nullable=False)
+    name = Column(String(100), nullable=False)
+    role = Column(String(20), default="student", nullable=False) # 'admin' or 'student'
+    password_hash = Column(String(255), nullable=False)
+    student_id = Column(Integer, nullable=True) # Linked Student id if role is student
+    created_at = Column(DateTime, default=datetime.datetime.utcnow)
+
+class DriveApplication(Base):
+    __tablename__ = "drive_applications"
+
+    id = Column(Integer, primary_key=True, index=True, autoincrement=True)
+    student_id = Column(Integer, index=True, nullable=False)
+    company_drive_id = Column(Integer, index=True, nullable=False)
+    status = Column(String(50), default="Applied") # 'Applied', 'Shortlisted', 'Interview Scheduled', 'Selected'
+    applied_at = Column(DateTime, default=datetime.datetime.utcnow)

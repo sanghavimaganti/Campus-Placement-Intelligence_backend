@@ -15,7 +15,9 @@ from app.schemas import (
     EvaluatedCandidate,
     StudentResponse,
     SkillGapRequest,
-    SkillGapResponse
+    SkillGapResponse,
+    WhatIfRequest,
+    WhatIfResponse
 )
 from app.analytics import (
     calculate_readiness_score,
@@ -297,3 +299,93 @@ def export_eligible_excel(
         media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
         headers={"Content-Disposition": f"attachment; filename={filename}"}
     )
+
+@router.post("/what-if-simulator", response_model=WhatIfResponse)
+def simulate_what_if(req: WhatIfRequest, db: Session = Depends(get_db)):
+    student = db.query(Student).filter(Student.id == req.student_id).first()
+    if not student:
+        raise HTTPException(status_code=404, detail="Student not found")
+
+    companies = db.query(CompanyDrive).all()
+
+    # 1. Baseline calculation
+    baseline_score = calculate_readiness_score(student)
+    baseline_eligible_companies = []
+
+    for c in companies:
+        crit = {
+            "min_cgpa": c.min_cgpa,
+            "min_tenth_percentage": c.min_tenth_percentage,
+            "min_twelfth_percentage": c.min_twelfth_percentage,
+            "max_active_backlogs": c.max_active_backlogs,
+            "max_history_backlogs": c.max_history_backlogs,
+            "eligible_branches": [b.strip() for b in c.eligible_branches.split(",") if b.strip()],
+            "required_skills": [s.strip() for s in c.required_skills.split(",") if s.strip()]
+        }
+        is_e, _, _, _, _ = evaluate_student_eligibility(student, crit)
+        if is_e:
+            baseline_eligible_companies.append(c.company_name)
+
+    # 2. Simulated Student object
+    class SimulatedStudent:
+        pass
+
+    sim_s = SimulatedStudent()
+    sim_s.cgpa = req.simulated_cgpa if req.simulated_cgpa is not None else student.cgpa
+    sim_s.tenth_percentage = student.tenth_percentage
+    sim_s.twelfth_percentage = student.twelfth_percentage
+    sim_s.active_backlogs = req.simulated_active_backlogs if req.simulated_active_backlogs is not None else student.active_backlogs
+    sim_s.history_of_backlogs = student.history_of_backlogs
+    sim_s.department = student.department
+    sim_s.gender = student.gender
+    sim_s.projects_count = student.projects_count + (req.additional_projects or 0)
+    sim_s.internships_count = student.internships_count + (req.additional_internships or 0)
+    sim_s.certifications_count = student.certifications_count
+
+    # Merge skills
+    curr_skills = [s.strip() for s in (student.skills or "").split(",") if s.strip()]
+    merged_skills = list(set(curr_skills + (req.additional_skills or [])))
+    sim_s.skills = ", ".join(merged_skills)
+
+    simulated_score = calculate_readiness_score(sim_s)
+    score_delta = round(simulated_score - baseline_score, 1)
+
+    simulated_eligible_companies = []
+    for c in companies:
+        crit = {
+            "min_cgpa": c.min_cgpa,
+            "min_tenth_percentage": c.min_tenth_percentage,
+            "min_twelfth_percentage": c.min_twelfth_percentage,
+            "max_active_backlogs": c.max_active_backlogs,
+            "max_history_backlogs": c.max_history_backlogs,
+            "eligible_branches": [b.strip() for b in c.eligible_branches.split(",") if b.strip()],
+            "required_skills": [s.strip() for s in c.required_skills.split(",") if s.strip()]
+        }
+        is_e, _, _, _, _ = evaluate_student_eligibility(sim_s, crit)
+        if is_e:
+            simulated_eligible_companies.append(c.company_name)
+
+    unlocked = [c for c in simulated_eligible_companies if c not in baseline_eligible_companies]
+
+    insights = []
+    if score_delta > 0:
+        insights.append(f"Your simulated profile raises your Placement Readiness Score by +{score_delta} points ({baseline_score} ➔ {simulated_score}).")
+    if unlocked:
+        insights.append(f"Unlocks eligibility for {len(unlocked)} new company drive(s): {', '.join(unlocked)}!")
+    if req.simulated_active_backlogs == 0 and student.active_backlogs > 0:
+        insights.append("Clearing all active backlogs removes strict corporate disqualifications across Super Dream & Dream recruiters.")
+    if req.additional_skills:
+        insights.append(f"Adding competency in {', '.join(req.additional_skills)} directly satisfies mandatory technical screening requirements.")
+    if not insights:
+        insights.append("Profile remains on track. Continue enhancing portfolio projects and competitive problem solving.")
+
+    return WhatIfResponse(
+        baseline_score=baseline_score,
+        simulated_score=simulated_score,
+        score_delta=score_delta,
+        baseline_eligible_count=len(baseline_eligible_companies),
+        simulated_eligible_count=len(simulated_eligible_companies),
+        unlocked_companies=unlocked,
+        insights=insights
+    )
+
