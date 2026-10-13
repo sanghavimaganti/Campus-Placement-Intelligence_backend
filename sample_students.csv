@@ -1,0 +1,11 @@
+roll_number,name,email,gender,department,cgpa,tenth_percentage,twelfth_percentage,active_backlogs,history_of_backlogs,skills,projects_count,internships_count,certifications_count,placement_status
+21CS101,Rohan Verma,rohan.verma@campus.edu,Male,CSE,8.85,89.0,86.5,0,0,"Python, Data Structures, Algorithms, React, SQL",3,1,2,Unplaced
+21CS102,Tanvi Deshmukh,tanvi.deshmukh@campus.edu,Female,CSE,9.30,94.0,91.0,0,0,"Python, Machine Learning, Deep Learning, AWS, Docker",3,2,3,Unplaced
+21IT103,Amitabh Roy,amitabh.roy@campus.edu,Male,IT,7.40,78.0,75.0,0,1,"Java, Spring Boot, MySQL, HTML, CSS",2,1,1,Unplaced
+21EC104,Prathik Hegde,prathik.hegde@campus.edu,Male,ECE,8.10,82.5,80.0,0,0,"C, Embedded Systems, Verilog, Microcontrollers, Python",2,1,2,Unplaced
+21EC105,Sneha Nair,sneha.nair@campus.edu,Female,ECE,7.60,80.0,79.0,0,0,"C++, Networking, Linux, Python",2,0,1,Unplaced
+21EE106,Manish Tiwari,manish.tiwari@campus.edu,Male,EEE,6.90,72.0,70.0,1,1,"MATLAB, Power Systems, Python, SQL",1,0,1,Unplaced
+21ME107,Kunal Jadhav,kunal.jadhav@campus.edu,Male,MECH,6.50,68.0,66.0,1,2,"AutoCAD, SolidWorks, Python",1,1,0,Unplaced
+21AD108,Isha Kapoor,isha.kapoor@campus.edu,Female,AIDS,9.15,92.0,89.0,0,0,"Python, TensorFlow, PyTorch, SQL, Power BI",3,2,2,Unplaced
+21AD109,Sameer Khan,sameer.khan@campus.edu,Male,AIDS,8.25,84.0,83.0,0,0,"Python, NLP, Pandas, Scikit-learn, Tableau",2,1,2,Unplaced
+21CS110,Ankit Saxena,ankit.saxena@campus.edu,Male,CSE,6.20,66.0,64.0,2,3,"HTML, CSS, JavaScript",1,0,0,Unplaced
