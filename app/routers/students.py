@@ -8,7 +8,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy import or_
 
 from app.database import get_db
-from app.models import Student, CompanyDrive
+from app.models import Student, CompanyDrive, User
 from app.schemas import StudentCreate, StudentUpdate, StudentResponse
 from app.analytics import calculate_readiness_score, evaluate_student_eligibility
 
@@ -114,6 +114,17 @@ def update_student(student_id: int, student_in: StudentUpdate, db: Session = Dep
     update_data = student_in.dict(exclude_unset=True)
     for field, value in update_data.items():
         setattr(student, field, value)
+
+    # Sync linked User record if name or email changed
+    if "name" in update_data or "email" in update_data:
+        linked_user = db.query(User).filter(
+            or_(User.student_id == student.id, User.email.ilike(student.email))
+        ).first()
+        if linked_user:
+            if "name" in update_data and update_data["name"]:
+                linked_user.name = update_data["name"]
+            if "email" in update_data and update_data["email"]:
+                linked_user.email = update_data["email"]
 
     db.commit()
     db.refresh(student)
