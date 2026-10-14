@@ -143,6 +143,23 @@ class SkillGapResponse(BaseModel):
     readiness_score: float
 
 # --- Authentication Schemas ---
+class StudentRegisterRequest(BaseModel):
+    name: str
+    roll_number: str
+    email: str
+    password: str
+    department: str = "CSE"
+    gender: Optional[str] = "Other"
+    cgpa: float = Field(7.0, ge=0.0, le=10.0)
+    tenth_percentage: float = Field(60.0, ge=0.0, le=100.0)
+    twelfth_percentage: float = Field(60.0, ge=0.0, le=100.0)
+    active_backlogs: int = Field(0, ge=0)
+    history_of_backlogs: int = Field(0, ge=0)
+    skills: Optional[str] = ""
+    projects_count: Optional[int] = 0
+    internships_count: Optional[int] = 0
+    certifications_count: Optional[int] = 0
+
 class LoginRequest(BaseModel):
     login_id: str # Can be email or roll number
     password: str
